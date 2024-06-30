@@ -41,5 +41,6 @@ module.exports = {
             ignoreTemplateLiterals: true,
             ignoreRegExpLiterals: true,
         }],
+        "import/prefer-default-export": "off" | "warn" | "error"
     },
 };
