@@ -1,16 +1,18 @@
 const { expect } = require('@playwright/test');
 const { test } = require('../fixture');
+import { userCredentials } from '../pages/Credentials';
 
-test.beforeEach(async ({ loginPage, inventoryPage }) => {
+test.beforeEach(async ({ loginPage }) => {
+    const { username, password } = userCredentials.standardUser;
     await loginPage.navigate();
-    await loginPage.performLogin('standard_user', 'secret_sauce');
-
-    await expect(inventoryPage.headerTitle).toBeVisible();
-    expect(await inventoryPage.inventoryItems.count()).toBeGreaterThanOrEqual(1);
+    await loginPage.performLogin(username, password);
 });
 
 test.describe('Inventory Sorting', () => {
     test('Perform and verify sorting on the Inventory page', async ({ inventoryPage }) => {
+        await expect(inventoryPage.headerTitle).toBeVisible();
+        expect(await inventoryPage.inventoryItems.count()).toBeGreaterThanOrEqual(1);
+
         await inventoryPage.sortItems('Name (A to Z)');
         const namesAZ = await inventoryPage.getItemNames();
         const sortedNamesAZ = namesAZ.slice().sort();
