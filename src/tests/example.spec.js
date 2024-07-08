@@ -1,4 +1,3 @@
-// @ts-check
 const { expect } = require('@playwright/test');
 const { test } = require('../fixture');
 

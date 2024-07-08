@@ -9,7 +9,22 @@ export class InventoryPage extends BaseSwagLabPage {
 
     get addItemToCartBtns() { return this.page.locator('[id^="add-to-cart"]'); }
 
+    get sortDropDown() { return this.page.locator('[data-test="product-sort-container"]'); }
+
     async addItemToCartById(id) {
         await this.addItemToCartBtns.nth(id).click();
+    }
+
+    async sortItems(optionText) {
+        await this.sortDropDown.selectOption({ label: optionText });
+    }
+
+    async getItemNames() {
+        return this.inventoryItems.locator('[data-test="inventory-item-name"]').allTextContents();
+    }
+
+    async getItemPrices() {
+        const pricesValue = await this.inventoryItems.locator('[data-test="inventory-item-price"]').allTextContents();
+        return pricesValue.map((price) => parseFloat(price.replace('$', '')));
     }
 }
