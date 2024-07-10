@@ -9,57 +9,65 @@ test.beforeEach(async ({ loginPage }) => {
     await loginPage.performLogin(username, password);
 });
 
-test.describe('Inventory Sorting', () => {
-    test('Perform and verify sorting on the Inventory page', async ({ inventoryPage }) => {
-        await expect(inventoryPage.headerTitle).toBeVisible();
-        expect(await inventoryPage.inventoryItems.count()).toBeGreaterThanOrEqual(1);
+const sortingScenarios = [
+    {
+        option: 'Name (A to Z)',
+        getItems: async (inventoryPage) => inventoryPage.getItemNames(),
+        sortFn: (items) => items.slice().sort(),
+    },
+    {
+        option: 'Name (Z to A)',
+        getItems: async (inventoryPage) => inventoryPage.getItemNames(),
+        sortFn: (items) => items.slice().sort().reverse(),
+    },
+    {
+        option: 'Price (low to high)',
+        getItems: async (inventoryPage) => inventoryPage.getItemPrices(),
+        sortFn: (items) => items.slice().sort((a, b) => a - b),
+    },
+    {
+        option: 'Price (high to low)',
+        getItems: async (inventoryPage) => inventoryPage.getItemPrices(),
+        sortFn: (items) => items.slice().sort((a, b) => b - a),
+    },
+];
 
-        await inventoryPage.sortItems('Name (A to Z)');
-        const namesAZ = await inventoryPage.getItemNames();
-        const sortedNamesAZ = namesAZ.slice().sort();
-        expect(namesAZ).toEqual(sortedNamesAZ);
-
-        await inventoryPage.sortItems('Name (Z to A)');
-        const namesZA = await inventoryPage.getItemNames();
-        const sortedNamesZA = namesZA.slice().sort().reverse();
-        expect(namesZA).toEqual(sortedNamesZA);
-
-        await inventoryPage.sortItems('Price (low to high)');
-        const pricesLtoH = await inventoryPage.getItemPrices();
-        const sortedPricesLtoH = pricesLtoH.slice().sort((a, b) => a - b);
-        expect(pricesLtoH).toEqual(sortedPricesLtoH);
-
-        await inventoryPage.sortItems('Price (high to low)');
-        const pricesHtoL = await inventoryPage.getItemPrices();
-        const sortedPricesHtoL = pricesHtoL.slice().sort((a, b) => b - a);
-        expect(pricesHtoL).toEqual(sortedPricesHtoL);
+sortingScenarios.forEach(({ option, getItems, sortFn }) => {
+    test(`Verify sorting by ${option}`, async ({ inventoryPage }) => {
+        await inventoryPage.sortItems(option);
+        const items = await getItems(inventoryPage);
+        const sortedItems = sortFn(items);
+        expect(items).toEqual(sortedItems);
     });
 });
 
 test.describe('Shopping Cart', () => {
     test('Add several random products and verify they are displayed correctly', async ({ inventoryPage, shopingCartPage }) => {
-        const numberOfItemsToAdd = Math.floor(Math.random() * 5) + 1;
-
         const itemNamesArray = await inventoryPage.getItemNames();
         const itemDescriptionsArray = await inventoryPage.getItemDescriptions();
         const itemPricesArray = await inventoryPage.getItemPrices();
+        const numberOfItemsToAdd = Math.floor(Math.random() * itemNamesArray.length) + 1;
 
+        function getRandomUniqueIndexes(count) {
+            const indexes = [];
+            while (indexes.length < count) {
+                const randomIndex = Math.floor(Math.random() * itemNamesArray.length);
+                if (!indexes.includes(randomIndex)) {
+                    indexes.push(randomIndex);
+                }
+            }
+            return indexes;
+        }
         const selectedItemsArray = [];
-        const selectedIndexes = new Set();
-        for (let i = 0; i < numberOfItemsToAdd; i++) {
-            let randomIndex;
+        const selectedIndexes = getRandomUniqueIndexes(numberOfItemsToAdd);
 
-            do {
-                randomIndex = Math.floor(Math.random() * itemNamesArray.length);
-            } while (selectedIndexes.has(randomIndex));
-
-            selectedIndexes.add(randomIndex);
-            await inventoryPage.addItemToCartByName(itemNamesArray[randomIndex]);
+        for (const i of selectedIndexes) {
+            await inventoryPage.addItemToCartByName(itemNamesArray[i]);
 
             selectedItemsArray.push({
-                name: itemNamesArray[randomIndex],
-                description: itemDescriptionsArray[randomIndex],
-                price: itemPricesArray[randomIndex],
+                name: itemNamesArray[i],
+                description: itemDescriptionsArray[i],
+                price: itemPricesArray[i],
             });
         }
 

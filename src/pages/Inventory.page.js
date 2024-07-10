@@ -16,9 +16,7 @@ export class InventoryPage extends BaseSwagLabPage {
     }
 
     async addItemToCartByName(itemName) {
-        const item = this.page.locator('.inventory_item').filter({ hasText: itemName });
-        const addButton = item.locator('[id^="add-to-cart"]');
-        await addButton.click();
+        await this.inventoryItems.filter({ hasText: itemName }).locator('[id^="add-to-cart"]').click();
     }
 
     async sortItems(optionText) {
