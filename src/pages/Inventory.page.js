@@ -15,12 +15,20 @@ export class InventoryPage extends BaseSwagLabPage {
         await this.addItemToCartBtns.nth(id).click();
     }
 
+    async addItemToCartByName(itemName) {
+        await this.inventoryItems.filter({ hasText: itemName }).locator('[id^="add-to-cart"]').click();
+    }
+
     async sortItems(optionText) {
         await this.sortDropDown.selectOption({ label: optionText });
     }
 
     async getItemNames() {
         return this.inventoryItems.locator('[data-test="inventory-item-name"]').allTextContents();
+    }
+
+    async getItemDescriptions() {
+        return this.inventoryItems.locator('[data-test="inventory-item-desc"]').allTextContents();
     }
 
     async getItemPrices() {
