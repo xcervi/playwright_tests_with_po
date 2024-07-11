@@ -46,7 +46,7 @@ test.describe('Shopping Cart', () => {
         const itemNamesArray = await inventoryPage.getItemNames();
         const itemDescriptionsArray = await inventoryPage.getItemDescriptions();
         const itemPricesArray = await inventoryPage.getItemPrices();
-        const numberOfItemsToAdd = Math.floor(Math.random() * itemNamesArray.length) + 1;
+        const numberOfItemsToAdd = Math.floor(Math.random() * (itemNamesArray.length - 1)) + 1;
 
         function getRandomUniqueIndexes(count) {
             const indexes = [];
