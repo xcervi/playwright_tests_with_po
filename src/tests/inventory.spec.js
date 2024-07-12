@@ -2,6 +2,7 @@ import { userCredentials } from '../pages/Credentials';
 
 const { expect } = require('@playwright/test');
 const { test } = require('../fixture');
+const { getRandomUniqueIndexes } = require('../utils').default;
 
 test.beforeEach(async ({ loginPage }) => {
     const { username, password } = userCredentials.standardUser;
@@ -48,18 +49,8 @@ test.describe('Shopping Cart', () => {
         const itemPricesArray = await inventoryPage.getItemPrices();
         const numberOfItemsToAdd = Math.floor(Math.random() * (itemNamesArray.length - 1)) + 1;
 
-        function getRandomUniqueIndexes(count) {
-            const indexes = [];
-            while (indexes.length < count) {
-                const randomIndex = Math.floor(Math.random() * itemNamesArray.length);
-                if (!indexes.includes(randomIndex)) {
-                    indexes.push(randomIndex);
-                }
-            }
-            return indexes;
-        }
         const selectedItemsArray = [];
-        const selectedIndexes = getRandomUniqueIndexes(numberOfItemsToAdd);
+        const selectedIndexes = getRandomUniqueIndexes(numberOfItemsToAdd, itemNamesArray.length);
 
         for (const i of selectedIndexes) {
             await inventoryPage.addItemToCartByName(itemNamesArray[i]);
@@ -83,5 +74,54 @@ test.describe('Shopping Cart', () => {
             expect(cartItemDescriptionsArray).toContain(item.description);
             expect(cartItemPricesArray).toContain(item.price);
         });
+    });
+
+    test('E2E purchase', async ({ inventoryPage, shopingCartPage, checkoutPageOne, checkoutPageTwo }) => {
+        const itemNamesArray = await inventoryPage.getItemNames();
+        const itemDescriptionsArray = await inventoryPage.getItemDescriptions();
+        const itemPricesArray = await inventoryPage.getItemPrices();
+        const numberOfItemsToAdd = Math.floor(Math.random() * (itemNamesArray.length - 1)) + 1;
+
+        const selectedItemsArray = [];
+        const selectedIndexes = getRandomUniqueIndexes(numberOfItemsToAdd, itemNamesArray.length);
+
+        for (const i of selectedIndexes) {
+            await inventoryPage.addItemToCartByName(itemNamesArray[i]);
+
+            selectedItemsArray.push({
+                name: itemNamesArray[i],
+                description: itemDescriptionsArray[i],
+                price: itemPricesArray[i],
+            });
+        }
+
+        await inventoryPage.shopingCart.click();
+        await expect(shopingCartPage.headerTitle).toBeVisible();
+
+        await shopingCartPage.checkoutButton.click();
+
+        await checkoutPageOne.firstNameField.fill('Tyler');
+        await checkoutPageOne.lastNameField.fill('Joseph');
+        await checkoutPageOne.postalCodeField.fill('43010');
+
+        await checkoutPageOne.continueButton.click();
+        await expect(checkoutPageTwo.headerTitle).toBeVisible();
+
+        const checkoutItemNamesArray = await checkoutPageTwo.getCheckoutItemNames();
+        const checkoutItemDescriptionsArray = await checkoutPageTwo.getCheckoutItemDescriptions();
+        const checkoutItemPricesArray = await checkoutPageTwo.getCheckoutItemPrices();
+
+        selectedItemsArray.forEach((item) => {
+            expect(checkoutItemNamesArray).toContain(item.name);
+            expect(checkoutItemDescriptionsArray).toContain(item.description);
+            expect(checkoutItemPricesArray).toContain(item.price);
+        });
+
+        const pricesSum = checkoutItemPricesArray.reduce(((accumulator, currentValue) => accumulator + parseFloat(currentValue)));
+        const taxValue = await checkoutPageTwo.getTax();
+        const totalPrice = Math.round(parseFloat(pricesSum + parseFloat(taxValue)) * 100) / 100;
+
+        expect(totalPrice).toEqual(await checkoutPageTwo.getTotalPrice())
+
     });
 });
