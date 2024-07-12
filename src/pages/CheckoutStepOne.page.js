@@ -1,6 +1,6 @@
 const { ShopingCartPage } = require('./ShopingCart.page');
 
-export class CheckoutPageOne extends ShopingCartPage {
+export class CheckoutStepOnePage extends ShopingCartPage {
     url = '/checkout-step-one.html';
 
     get firstNameField() { return this.page.locator('#first-name'); }

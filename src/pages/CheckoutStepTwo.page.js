@@ -1,6 +1,6 @@
-const { CheckoutPageOne } = require('./CheckoutOne.page');
+const { CheckoutStepOnePage } = require('./CheckoutStepOne.page');
 
-export class CheckoutPageTwo extends CheckoutPageOne {
+export class CheckoutStepTwoPage extends CheckoutStepOnePage {
     url = '/checkout-step-two.html';
 
     checkoutItemSelector = '.cart_item';

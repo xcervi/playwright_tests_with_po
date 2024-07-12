@@ -76,7 +76,7 @@ test.describe('Shopping Cart', () => {
         });
     });
 
-    test('E2E purchase', async ({ inventoryPage, shopingCartPage, checkoutPageOne, checkoutPageTwo }) => {
+    test('E2E purchase', async ({ inventoryPage, shopingCartPage, checkoutStepOnePage, checkoutStepTwoPage }) => {
         const itemNamesArray = await inventoryPage.getItemNames();
         const itemDescriptionsArray = await inventoryPage.getItemDescriptions();
         const itemPricesArray = await inventoryPage.getItemPrices();
@@ -100,16 +100,16 @@ test.describe('Shopping Cart', () => {
 
         await shopingCartPage.checkoutButton.click();
 
-        await checkoutPageOne.firstNameField.fill('Tyler');
-        await checkoutPageOne.lastNameField.fill('Joseph');
-        await checkoutPageOne.postalCodeField.fill('43010');
+        await checkoutStepOnePage.firstNameField.fill('Tyler');
+        await checkoutStepOnePage.lastNameField.fill('Joseph');
+        await checkoutStepOnePage.postalCodeField.fill('43010');
 
-        await checkoutPageOne.continueButton.click();
-        await expect(checkoutPageTwo.headerTitle).toBeVisible();
+        await checkoutStepOnePage.continueButton.click();
+        await expect(checkoutStepTwoPage.headerTitle).toBeVisible();
 
-        const checkoutItemNamesArray = await checkoutPageTwo.getCheckoutItemNames();
-        const checkoutItemDescriptionsArray = await checkoutPageTwo.getCheckoutItemDescriptions();
-        const checkoutItemPricesArray = await checkoutPageTwo.getCheckoutItemPrices();
+        const checkoutItemNamesArray = await checkoutStepTwoPage.getCheckoutItemNames();
+        const checkoutItemDescriptionsArray = await checkoutStepTwoPage.getCheckoutItemDescriptions();
+        const checkoutItemPricesArray = await checkoutStepTwoPage.getCheckoutItemPrices();
 
         selectedItemsArray.forEach((item) => {
             expect(checkoutItemNamesArray).toContain(item.name);
@@ -118,10 +118,10 @@ test.describe('Shopping Cart', () => {
         });
 
         const pricesSum = checkoutItemPricesArray.reduce(((accumulator, currentValue) => accumulator + parseFloat(currentValue)));
-        const taxValue = await checkoutPageTwo.getTax();
+        const taxValue = await checkoutStepTwoPage.getTax();
         const totalPrice = Math.round(parseFloat(pricesSum + parseFloat(taxValue)) * 100) / 100;
 
-        expect(totalPrice).toEqual(await checkoutPageTwo.getTotalPrice())
+        expect(totalPrice).toEqual(await checkoutStepTwoPage.getTotalPrice())
 
     });
 });
