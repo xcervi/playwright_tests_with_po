@@ -44,6 +44,6 @@ module.exports = {
         'import/prefer-default-export': 'off',
         'no-await-in-loop': 'off',
         'no-plusplus': 'off',
-        'no-conditional-in-test': 'off'
+        'playwright/no-conditional-in-test': 'off',
     },
 };

@@ -11,6 +11,8 @@ export class ShopingCartPage extends BaseSwagLabPage {
 
     get cartItems() { return this.page.locator(this.cartItemSelector); }
 
+    get checkoutButton() { return this.page.locator('#checkout'); }
+
     // async below added to show the function returns a promise
     async getCartItemByName(name) {
         return this.page.locator(this.cartItemSelector, { hasText: name });
